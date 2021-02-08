@@ -55,6 +55,7 @@ UploadFile.prototype.refreshAccessToken = async function() {
 
 UploadFile.prototype.upload = async function() {
     this.fileSize = fs.statSync(this.filePath).size;
+    this.mimeType = mime.getType(this.filePath) === null ? 'application/octet-stream' : mime.getType(this.filePath)
     var options = {
         url:	`https://${this.host}${this.apiService}?uploadType=resumable&part=snippet,status,contentDetails${serializeUrl(this.optionalParams)}`,
         headers: {
@@ -63,7 +64,7 @@ UploadFile.prototype.upload = async function() {
             'Content-Length'            :   new Buffer.from(JSON.stringify(this.metadataBody)).length,
             'Content-Type'              :   'application/json; charset=UTF-8',
             'X-Upload-Content-Length'   :   this.fileSize,
-            'X-Upload-Content-Type'     : 	mime.getType(this.filePath)
+            'X-Upload-Content-Type'     : 	this.mimeType
         },
         body: JSON.stringify(this.metadataBody)
     };
@@ -120,7 +121,7 @@ UploadFile.prototype.send = async function() {
             headers: {
                 'Authorization' :   'Bearer ' + this.tokens.access_token,
                 'Content-Length':	bytesToSend,
-                'Content-Type'  :	mime.getType(this.filePath),
+                'Content-Type'  :	this.mimeType,
                 'Content-Range' :   `bytes ${startByte}-${endByte-1}/${this.fileSize}`
             },
             body: uploadPipe
@@ -146,7 +147,7 @@ UploadFile.prototype.send = async function() {
             break;
         }
 
-        if (res.response.statusCode === 308 && res.response.headers.hasOwnProperty('range')) {
+        if (res.response.hasOwnProperty('statusCode') && res.response.statusCode === 308 && res.response.headers.hasOwnProperty('range')) {
             this.sentBytes = Number(res.response.headers.range.split('-').pop());
             this.emit('progress', `Bytes sent: ${this.sentBytes}`)
         } else {
