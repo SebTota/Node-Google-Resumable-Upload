@@ -1,0 +1,23 @@
+{
+  "name": "node-google-resumable-upload",
+  "version": "1.0.0",
+  "description": "Upload large files to Google Services using a resumable upload.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SebTota/Node-Google-Resumable-Upload.git"
+  },
+  "author": "Sebastian Tota",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/SebTota/Node-Google-Resumable-Upload/issues"
+  },
+  "homepage": "https://github.com/SebTota/Node-Google-Resumable-Upload#readme",
+  "dependencies": {
+    "got": "^11.8.1",
+    "mime": "^2.5.0"
+  }
+}
