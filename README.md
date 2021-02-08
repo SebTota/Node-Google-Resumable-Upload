@@ -3,9 +3,9 @@ Allows users to upload files or any size to various Google services using the
 resumable upload API.
 
 ## Usage
+### Install
 ```bash
-git clone https://github.com/SebTota/Node-Google-Resumable-Upload
-npm install
+npm i node-google-resumable-upload
 ```
 
 ### Tokens
@@ -15,7 +15,7 @@ and the `clientId` and `clientSecret` values are set.
 
 ### Uploading A Single File (Google Drive)
 ```javascript
-const UploadFile = require('pathToRepo/index.js')
+const UploadFile = require('node-google-resumable-upload')
 let uploadFile = new UploadFile();
 uploadFile.tokens = token; // OAuth token
 uploadFile.filePath = 'path/To/File';
@@ -59,7 +59,7 @@ uploadFile.on('success', (s) => {
 
 ### Uploading Multiple Files (Google Drive)
 ```javascript
-const UploadFile = require('pathToRepo/index.js')
+const UploadFile = require('node-google-resumable-upload')
 let files = ['/Users/user1/path/to/file1', '/Users/user1/path/to/file2']
 
 files.forEach((file) => {
