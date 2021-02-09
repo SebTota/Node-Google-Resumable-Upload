@@ -10,7 +10,7 @@
     "type": "git",
     "url": "git+https://github.com/SebTota/Node-Google-Resumable-Upload.git"
   },
-  "keywords": [],
+  "keywords": ["google-drive-api", "google-upload", "drive-upload", "youtube-upload"],
   "author": "Sebastian Tota",
   "license": "MIT",
   "bugs": {
