@@ -17,6 +17,8 @@ function UploadFile() {
     this.clientSecret = '';
     this.chunkSize = 1024 * 1024 * 8; // Default chunk size: 8MB (estimate of 8MiB as recommended by Google)
     this.optionalParams = {};
+    this.pathParam = '';
+    this.initMethod = 'POST';
 }
 
 util.inherits(UploadFile, EventEmitter);
@@ -56,8 +58,16 @@ UploadFile.prototype.refreshAccessToken = async function() {
 UploadFile.prototype.upload = async function() {
     this.fileSize = fs.statSync(this.filePath).size;
     this.mimeType = mime.getType(this.filePath) === null ? 'application/octet-stream' : mime.getType(this.filePath)
+
+    let url = `https://${this.host}${this.apiService}`;
+    if (this.pathParam.length > 0) {
+        url += `/${this.pathParam}`;
+    }
+    url += `?uploadType=resumable&part=snippet,status,contentDetails${serializeUrl(this.optionalParams)}`
+
     var options = {
-        url:	`https://${this.host}${this.apiService}?uploadType=resumable&part=snippet,status,contentDetails${serializeUrl(this.optionalParams)}`,
+        url: url,
+        method: this.initMethod,
         headers: {
             'Host'                      :   this.host,
             'Authorization'             :   'Bearer ' + this.tokens.access_token,
@@ -72,7 +82,7 @@ UploadFile.prototype.upload = async function() {
     let res;
     let err;
     try {
-        res = await got.post(options)
+        res = await got(options)
     } catch(e) {
         if (e.response.statusCode === 401 && this.refreshToken === true) {
             this.refreshToken = false; // Only try to refresh the token once
@@ -80,7 +90,8 @@ UploadFile.prototype.upload = async function() {
             await this.upload(); // Retry upload
             return;
         } else {
-            this.emit('error', new Error(e))
+            this.emit('error', e);
+            err = e;
         }
     }
 
@@ -135,9 +146,13 @@ UploadFile.prototype.send = async function() {
              * Check if error being thrown is due to status code 308
              * Status code 308 is an expected code in this application asking the user to resume the upload
              */
-            if (e.response.statusCode === 308) {
-                res = e
-            } else {
+            res = e;
+            if (e.response.statusCode === 401 && this.refreshToken === true) {
+                this.refreshToken = false; // Only try to refresh the token once
+                await this.refreshAccessToken(); // Refresh access token
+                await this.send(); // Retry upload
+                return;
+            } else if (e.response.statusCode !== 308) {
                 this.emit('error', new Error(e))
             }
         }
@@ -151,7 +166,7 @@ UploadFile.prototype.send = async function() {
             this.sentBytes = Number(res.response.headers.range.split('-').pop());
             this.emit('progress', `Bytes sent: ${this.sentBytes}`)
         } else {
-            if ((this.retry > 0) || (this.retry <= -1)) {
+            if ((this.retry > 0) || (this.retry === -1)) {
                 this.retry--;
                 this.emit('progress', 'Retrying')
                 await this.send(); // Retry initiating upload

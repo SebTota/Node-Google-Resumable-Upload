@@ -88,6 +88,53 @@ files.forEach((file) => {
 })
 ```
 
+### Updating the Content of an Existing File to Another Version
+```javascript
+const UploadFile = require('node-google-resumable-upload')
+let uploadFile = new UploadFile();
+uploadFile.tokens = token; // OAuth token
+uploadFile.filePath = 'path/To/File';
+uploadFile.initMethod = 'PATCH'
+uploadFile.pathParam = "fileId"; // The unique file id as returned from inital uplaod
+
+// uploadFile.metadataBody = {} ! Do NOT specify metadata like new parents
+
+// Optional:
+uploadFile.refreshToken = true; // Optional: Refreshed expired access token
+uploadFile.clientId = ''; // Required if refreshToken = true. 
+uploadFile.clientSecret = ''; // Required if refreshToken = true. 
+
+uploadFile.upload(); // Initalize upload
+
+uploadFile.on('error', (e) => {
+    console.log(e)
+})
+    
+/*
+* Tracks progress of file upload. Based on chunk size, not time.
+ */
+uploadFile.on('progress', (p) => {
+    console.log(p)
+})
+
+/*
+* Returns the body of the final upload.
+ */
+uploadFile.on('success', (s) => {
+    console.log(s)
+    
+    /*
+    * Ex return when uploading image file to Google Drive
+     */
+    s = {
+        kind: 'drive#file',
+        id: 'abc123',
+        name: 'file name',
+        mimeType: 'image/jpeg'
+    }
+})
+```
+
 ### Available Parameters
 ```javascript
 sentBytes = 0;
@@ -101,7 +148,9 @@ refreshToken = false; // Indicate if the application should try to refresh the a
 clientId = ''; // Required if refreshToken = true
 clientSecret = ''; // Require if refreshToken = true
 chunkSize = 1024 * 1024 * 8; // Default chunk size: 8MB (estimate of 8MiB as recommended by Google)
-this.optionalParams = {}; // Additional optional url params
+optionalParams = {}; // Additional optional url params
+pathParam = ''; // URL Path Parameter
+initMethod = 'POST'; // Initial request method
 ```
 
 ## Attribution
