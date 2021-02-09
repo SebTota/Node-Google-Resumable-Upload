@@ -1,6 +1,6 @@
 {
   "name": "node-google-resumable-upload",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Upload large files to Google Services using a resumable upload.",
   "main": "index.js",
   "scripts": {
